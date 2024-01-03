@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { SessionStore } from "node_modules/next-auth/core/lib/cookie";
 
 export const config = {
   matcher: [

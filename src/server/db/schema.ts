@@ -21,8 +21,8 @@ import {
 
 export const pgTable = pgTableCreator((name) => `t3-multi-tenant_${name}`);
 
-export const posts = pgTable(
-  "post",
+export const products = pgTable(
+  "products",
   {
     id: bigint("id", { mode: "number" }).primaryKey(),
     name: varchar("name", { length: 256 }),
@@ -38,14 +38,19 @@ export const posts = pgTable(
   }),
 );
 
+export const productsRelations = relations(products, ({ one }) => ({
+  sites: one(sites, { fields: [products.createdById], references: [sites.id] }),
+}));
+
 export const sites = pgTable('site', {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }),
   userId: varchar("userId", { length: 255 }).notNull(),
 })
 
-export const sitesRelations = relations(sites, ({ one }) => ({
+export const sitesRelations = relations(sites, ({ one, many }) => ({
   user: one(users, { fields: [sites.userId], references: [users.id] }),
+  products: many(products)
 }));
 
 
