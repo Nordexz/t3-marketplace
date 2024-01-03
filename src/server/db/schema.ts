@@ -26,6 +26,9 @@ export const products = pgTable(
   {
     id: bigint("id", { mode: "number" }).primaryKey(),
     name: varchar("name", { length: 256 }),
+    version: varchar("version", { length: 255 }),
+    authorName: varchar("author_name", { length: 255 }),
+    description: varchar("description", { length: 255 }),
     createdById: varchar("createdById", { length: 255 }).notNull(),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
