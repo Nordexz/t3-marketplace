@@ -1,12 +1,23 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { Button } from "@/lib/components/button";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { EditCard } from "./components/edit-card";
+import { useState } from "react";
+import { v4 } from "uuid";
+
+export interface PostType {
+  id: string;
+  title: string;
+  author: string;
+  description: string;
+}
 
 export default function HomePage() {
   const { data } = useSession();
+  console.log(data);
 
   const { mutate: create } = useMutation({
     mutationFn: () =>
@@ -15,37 +26,53 @@ export default function HomePage() {
         userId: data?.user.id,
       }),
   });
+  // const { data: postsData } = useQuery({
+  //   queryKey: ["postsData"],
+  //   queryFn: () => axios.post("api/site", { id: data?.user.id }),
+  // });
+  // console.log(postsData?.data);
+
+  const [posts, setPosts] = useState<PostType[]>([]);
+
+  const deletePostHandler = (id: string) => {
+    const filteredPosts = posts.filter((post) => post.id !== id);
+    setPosts(filteredPosts);
+  };
+
+  const createPostHandler = () => {
+    const newPost = {
+      id: v4(),
+      title: "",
+      author: "",
+      description: "",
+    } as PostType;
+    setPosts((prevState) => [...prevState, newPost]);
+  };
+
+  const changePostHandler = (post: PostType) => {
+    const indexPost = posts.findIndex(
+      (currentPost) => currentPost.id === post.id,
+    );
+    const newPostsArr = [...posts];
+    newPostsArr[indexPost] = post;
+    setPosts(newPostsArr);
+  };
+  console.log(posts);
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center">
       <button onClick={() => create()}>CREATE SITE</button>
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
-        </div>
+      <Button onClick={createPostHandler} className="mb-3">
+        Create new post
+      </Button>
+      <div className="flex w-full max-w-5xl flex-col gap-4">
+        {posts.map((post) => (
+          <EditCard
+            key={post.id}
+            post={post}
+            onPostHandler={changePostHandler}
+            onDelete={deletePostHandler}
+          />
+        ))}
       </div>
     </main>
   );
